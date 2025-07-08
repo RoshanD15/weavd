@@ -27,7 +27,7 @@ A web app to track and visualize personal fragrance collections and usage stats.
 - Dark mode toggle
 
 ## Inspiration
-Built to solve the frustration of tracking and organizing a personal fragrance collection. Features and UI guided by market research and user feedback.
+Built to solve the frustration of tracking and organizing a personal fragrance collection. As well as providing nice quality of life features and UI guided by market research and user feedback, built on feedback from the fragrance collector community.
 
 ## Live Demo
 (Coming soon)
