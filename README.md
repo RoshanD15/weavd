@@ -17,9 +17,6 @@ A web app to track and visualize personal fragrance collections and usage stats.
 - Deployment: Vercel
 - Version Control: Git, GitHub
 
-## Screenshots
-(Add screenshots here later)
-
 ## Future Improvements
 - Share your fragrance wardrobe with friends
 - Personalized fragrance recommendations
@@ -28,9 +25,6 @@ A web app to track and visualize personal fragrance collections and usage stats.
 
 ## Inspiration
 Built to solve the frustration of tracking and organizing a personal fragrance collection. As well as providing nice quality of life features and UI guided by market research and user feedback, built on feedback from the fragrance collector community.
-
-## Live Demo
-(Coming soon)
 
 ## Author
 Roshan Dayananda – [LinkedIn](https://www.linkedin.com/in/roshan-dayananda/) – [GitHub](https://github.com/[yourusername])
