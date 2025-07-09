@@ -15,7 +15,6 @@ A web app to track and visualize personal fragrance collections and usage stats.
 - Backend & Auth: Supabase
 - Database: PostgreSQL (Supabase)
 - Deployment: Vercel
-- Version Control: Git, GitHub
 
 ## Future Improvements
 - Share your fragrance wardrobe with friends
