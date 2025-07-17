@@ -1,10 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import FragranceCard from "../components/FragranceCard";
-import Sidebar from "../components/Sidebar";
-import HamburgerMenu from "../components/HamburgerMenu";
 
 export default function Explore() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const fragrances = [
     { name: "Bleu de Chanel", house: "Chanel" },
     { name: "Dior Sauvage", house: "Dior" },
@@ -25,24 +22,15 @@ export default function Explore() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Hamburger for mobile only with animation */}
-      <HamburgerMenu onClick={() => setSidebarOpen(true)} show={!sidebarOpen} />
-
-      {/* Sidebar */}
-      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
-
-      {/* Main Content */}
-      <main className="flex-1 p-8">
-        <h1 className="text-3xl font-bold mb-2">Explore Fragrances</h1>
-        <div className="text-sm mb-4 text-gray-500">Popular Now</div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {fragrances.map((f, i) => (
-            <FragranceCard key={i} name={f.name} house={f.house} />
-          ))}
-        </div>
-      </main>
-    </div>
+    <>
+      <h1 className="text-3xl font-bold mb-2">Explore Fragrances</h1>
+      <div className="text-sm mb-4 text-gray-500">Popular Now</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        {fragrances.map((f, i) => (
+          <FragranceCard key={i} name={f.name} house={f.house} />
+        ))}
+      </div>
+    </>
   );
 }
 

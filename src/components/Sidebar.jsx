@@ -1,38 +1,89 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 export default function Sidebar({ open, setOpen }) {
-    return (
-      <>
-        {/* Overlay for mobile */}
-        {open && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-30 z-20 md:hidden"
-            onClick={() => setOpen(false)}
-          />
-        )}
-        <div
-          className={`
-            fixed top-0 left-0 h-full w-56 bg-white shadow-lg z-30 transition-transform duration-300
-            ${open ? "translate-x-0" : "-translate-x-full"}
-            md:translate-x-0 md:relative md:shadow-none md:bg-gray-100 md:h-screen
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    function handleResize() {
+      setWindowWidth(window.innerWidth);
+    }
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const alwaysOpen = windowWidth >= 768;
+  const expanded = open || alwaysOpen;
+
+  // Optional: close mobile sidebar when going to desktop
+  useEffect(() => {
+    if (windowWidth >= 768) {
+      setOpen(false);
+    }
+  }, [windowWidth, setOpen]);
+
+  return (
+    <>
+      <div
+        className={`fixed inset-0 bg-black bg-opacity-20 z-20 transition-opacity duration-300 md:hidden ${
+          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setOpen(false)}
+      />
+      <div
+        className={`
+            z-30
+            bg-white/30 backdrop-blur-xl border border-white/40 shadow-lg
+            transition-all duration-500
+            overflow-hidden flex flex-col
+            ${expanded ? "w-56 h-[90vh] rounded-2xl" : "w-20 h-12 rounded-2xl"}
+            fixed top-6 left-6
+            md:relative md:top-0 md:left-0 md:h-screen md:w-56 md:rounded-b-2xl md:rounded-t-none md:shadow-none md:bg-gray-100 md:border-none md:backdrop-blur-none
           `}
-        >
-          {/* Close button (mobile only) */}
+        style={{ WebkitBackdropFilter: "blur(20px)" }}
+      >
+        {/* Hamburger icon - only show when not expanded (mobile only) */}
+        {!expanded && (
           <button
-            className="md:hidden absolute top-4 right-4 p-2 text-2xl"
-            onClick={() => setOpen(false)}
+            className="w-full h-full flex items-center justify-center md:hidden"
+            onClick={() => setOpen(true)}
+            aria-label="Open sidebar"
           >
-            &times;
+            <div className="relative w-8 h-6">
+              <span className="absolute h-0.5 w-8 bg-gray-800 rounded top-0 left-0 transition-all duration-300"></span>
+              <span className="absolute h-0.5 w-8 bg-gray-800 rounded top-2.5 left-0 transition-all duration-300"></span>
+              <span className="absolute h-0.5 w-8 bg-gray-800 rounded top-5 left-0 transition-all duration-300"></span>
+            </div>
           </button>
-          <h2 className="font-bold text-xl m-6 mb-8">MyScents</h2>
-          <nav className="flex flex-col gap-4 px-6">
-            <Link to="/explore" onClick={() => setOpen(false)} className="hover:text-primary">Explore</Link>
-            <Link to="/collection" onClick={() => setOpen(false)} className="hover:text-primary">Collection</Link>
-            <Link to="/favorites" onClick={() => setOpen(false)} className="hover:text-primary">Favorites</Link>
-            <Link to="/profile" onClick={() => setOpen(false)} className="hover:text-primary">Profile</Link>
-          </nav>
-        </div>
-      </>
-    );
-  }
+        )}
+        {/* Sidebar content - show when expanded (always on desktop) */}
+        {expanded && (
+          <div className="flex flex-col h-full">
+            {/* Close button - mobile only */}
+            {!alwaysOpen && (
+              <button
+                className="absolute top-4 right-4 p-2 text-2xl md:hidden"
+                onClick={() => setOpen(false)}
+                aria-label="Close sidebar"
+              >
+                &times;
+              </button>
+            )}
+            <h2 className="font-bold text-xl m-6 mb-8">MyScents</h2>
+            <nav className="flex flex-col gap-4 px-6">
+              <Link to="/explore" onClick={() => setOpen(false)} className="hover:text-primary">
+                Explore
+              </Link>
+              <Link to="/collection" onClick={() => setOpen(false)} className="hover:text-primary">
+                Collection
+              </Link>
+              <Link to="/profile" onClick={() => setOpen(false)} className="hover:text-primary">
+                Profile
+              </Link>
+            </nav>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
