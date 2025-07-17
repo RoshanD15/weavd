@@ -69,13 +69,13 @@ export default function Sidebar({ open, setOpen }) {
                 &times;
               </button>
             )}
-            <h2 className="font-bold text-xl m-6 mb-8">MyScents</h2>
+            <h2 className="font-bold text-xl m-6 mb-8">weavd</h2>
             <nav className="flex flex-col gap-4 px-6">
               <Link to="/explore" onClick={() => setOpen(false)} className="hover:text-primary">
                 Explore
               </Link>
-              <Link to="/collection" onClick={() => setOpen(false)} className="hover:text-primary">
-                Collection
+              <Link to="/Closet" onClick={() => setOpen(false)} className="hover:text-primary">
+                Closet
               </Link>
               <Link to="/profile" onClick={() => setOpen(false)} className="hover:text-primary">
                 Profile

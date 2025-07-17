@@ -7,10 +7,10 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
       <h1 className="text-4xl font-bold text-primary mb-4">
-        Welcome to MyScents!
+        Welcome to weavd!
       </h1>
       <p className="text-lg text-gray-700 mb-8">
-        Track, discover, and manage your fragrance collection.
+        Track, discover, and manage your fragrance Closet.
       </p>
       <div className="flex flex-col gap-4 mb-4 max-w-xs">
         <button

@@ -1,8 +1,8 @@
 import React from "react";
-import FragranceCard from "../components/FragranceCard";
+import GarmentCard from "../components/GarmentCard";
 
 export default function Explore() {
-  const fragrances = [
+  const Items = [
     { name: "Bleu de Chanel", house: "Chanel" },
     { name: "Dior Sauvage", house: "Dior" },
     { name: "Aventus", house: "Creed" },
@@ -23,11 +23,11 @@ export default function Explore() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold mb-2">Explore Fragrances</h1>
+      <h1 className="text-3xl font-bold mb-2">Explore Fashion</h1>
       <div className="text-sm mb-4 text-gray-500">Popular Now</div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-        {fragrances.map((f, i) => (
-          <FragranceCard key={i} name={f.name} house={f.house} />
+        {Items.map((f, i) => (
+          <GarmentCard key={i} name={f.name} house={f.house} />
         ))}
       </div>
     </>

@@ -1,11 +1,11 @@
-# MyScents
-A web app to track and visualize personal fragrance collections and usage stats.
+# weavd
+A web app to track and visualize personal fragrance Closets and usage stats.
 ## Features
 - Secure user authentication and login
-- Add, edit, and remove fragrances in your personal wardrobe
-- Mark favorite fragrances and track usage patterns
+- Add, edit, and remove Items in your personal wardrobe
+- Mark favorite Items and track usage patterns
 - Interactive dashboard showing:
-  - Most used fragrances
+  - Most used Items
   - Favorite fragrance categories
   - Usage trends over time
 - Fully responsive for desktop and mobile
@@ -19,11 +19,11 @@ A web app to track and visualize personal fragrance collections and usage stats.
 ## Future Improvements
 - Share your fragrance wardrobe with friends
 - Personalized fragrance recommendations
-- Ratings and review system for fragrances
+- Ratings and review system for Items
 - Dark mode toggle
 
 ## Inspiration
-Built to solve the frustration of tracking and organizing a personal fragrance collection. As well as providing nice quality of life features and UI guided by market research and user feedback, built on feedback from the fragrance collector community.
+Built to solve the frustration of tracking and organizing a personal fragrance Closet. As well as providing nice quality of life features and UI guided by market research and user feedback, built on feedback from the fragrance collector community.
 
 ## Author
 Roshan Dayananda – [LinkedIn](https://www.linkedin.com/in/roshan-dayananda/) – [GitHub](https://github.com/[yourusername])
@@ -32,8 +32,8 @@ Roshan Dayananda – [LinkedIn](https://www.linkedin.com/in/roshan-dayananda/) �
 
 ```bash
 # Clone the repository
-git clone https://github.com/[yourusername]/myscents.git
-cd myscents
+git clone https://github.com/[yourusername]/weavd.git
+cd weavd
 
 # Install dependencies
 npm install

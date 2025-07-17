@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function FragranceCard({ name = "Name", house = "House" }) {
+export default function GarmentCard({ name = "Name", house = "House" }) {
   return (
     <div className="bg-white rounded-lg shadow p-4 flex flex-col items-center w-full h-full">
       {/* Image placeholder */}

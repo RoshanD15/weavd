@@ -35,7 +35,7 @@ export default function Login() {
     if (error) {
       setError(error.message);
     } else {
-      navigate("/Collection");
+      navigate("/Closet");
     }
     setLoading(false);
   };
@@ -46,7 +46,7 @@ export default function Login() {
         onSubmit={handleSubmit}
         className="bg-white rounded-lg shadow p-8 flex flex-col w-full max-w-md"
       >
-        <h2 className="text-3xl font-bold mb-6 text-center">Login to MyScents</h2>
+        <h2 className="text-3xl font-bold mb-6 text-center">Login to weavd</h2>
         <label className="mb-2 text-gray-700 font-medium" htmlFor="email">
           Email
         </label>

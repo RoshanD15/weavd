@@ -1,27 +1,27 @@
 import React, { useState } from "react";
-import FragranceCard from "../components/FragranceCard";
+import GarmentCard from "../components/GarmentCard";
 import FloatingAddButton from "../components/FloatingAddButton";
-import AddFragranceModal from "../components/AddFragranceModal";
+import AddItemsModal from "../components/AddItemsModal";
 
-export default function Collection() {
+export default function Closet() {
   const [showModal, setShowModal] = useState(false);
 
   const handleAdd = () => {
     setShowModal(false);
-    // Add logic to update collection
+    // Add logic to update Closet
   };
 
   return (
     <>
-      <h1 className="text-3xl font-bold mb-2">My Collection</h1>
+      <h1 className="text-3xl font-bold mb-2">My Closet</h1>
       <div className="text-sm mb-4 text-gray-500">Recently Viewed</div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {Array.from({ length: 12 }).map((_, i) => (
-          <FragranceCard key={i} />
+          <GarmentCard key={i} />
         ))}
       </div>
       <FloatingAddButton onClick={() => setShowModal(true)} />
-      <AddFragranceModal
+      <AddItemsModal
         show={showModal}
         onClose={() => setShowModal(false)}
         onAdd={handleAdd}

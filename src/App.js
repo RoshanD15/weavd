@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
-import Collection from "./pages/Collection";
+import Closet from "./pages/Closet";
 import Explore from "./pages/Explore";
 import Profile from "./pages/Profile";
 import Sidebar from "./components/Sidebar";
@@ -29,7 +29,7 @@ function AppShell() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/collection" element={<Collection />} />
+          <Route path="/Closet" element={<Closet />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
