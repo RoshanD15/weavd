@@ -1,13 +1,20 @@
 import React, { useState } from "react";
+import { uploadImage } from "../utils/uploadImage";
+import { useSession } from '@supabase/auth-helpers-react';
 
 const GROUP_PALETTE = [
-  "#00aaff", // Blue
-  "#4caf50", // Green
-  "#f9a825", // Yellow
-  "#e040fb", // Purple
-  "#ff5252", // Red
-  "#ff9800", // Orange
+  "#00aaff", "#4caf50", "#f9a825", "#e040fb", "#ff5252", "#ff9800"
 ];
+
+async function fetchVisionLabels(imageUrls) {
+  const response = await fetch("http://localhost:4000/vision", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ imageUrls }),
+  });
+  const data = await response.json();
+  return data.results;
+}
 
 export default function AddItemsModal({ show, onClose, onAdd }) {
   const [itemName, setItemName] = useState("");
@@ -20,19 +27,38 @@ export default function AddItemsModal({ show, onClose, onAdd }) {
   const [tagInput, setTagInput] = useState("");
   const [showGrid, setShowGrid] = useState(false);
 
-  // Grouping logic
+  // UX State
+  const [loadingAI, setLoadingAI] = useState(false);
+
+  // Grouping
   const [selectedImages, setSelectedImages] = useState([]);
-  const [groups, setGroups] = useState([]); // array of arrays of indices
-  const [groupColors, setGroupColors] = useState([]); // array of color per group
+  const [groups, setGroups] = useState([]);
+  const [groupColors, setGroupColors] = useState([]);
+
+  const session = useSession();
 
   if (!show) return null;
 
-  // Image & tag helpers
+  // Helpers
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     setImages(prev => [...prev, ...files]);
   };
-  const removeImage = (idx) => setImages(images.filter((_, i) => i !== idx));
+
+  const removeImage = (idx) => {
+    setImages(prev => prev.filter((_, i) => i !== idx));
+    setGroups(prevGroups =>
+      prevGroups
+        .map(group =>
+          group.filter(i => i !== idx).map(i => (i > idx ? i - 1 : i))
+        )
+        .filter(group => group.length > 0)
+    );
+    setSelectedImages(prevSelected =>
+      prevSelected.filter(i => i !== idx).map(i => (i > idx ? i - 1 : i))
+    );
+  };
+
   const addColorTag = () => {
     if (colorInput && !colorTags.includes(colorInput)) {
       setColorTags([...colorTags, colorInput]);
@@ -62,37 +88,95 @@ export default function AddItemsModal({ show, onClose, onAdd }) {
     setGroupColors(prev => [...prev, GROUP_PALETTE[prev.length % GROUP_PALETTE.length]]);
     setSelectedImages([]);
   };
-  const handleCloseGrid = () => {
-    setShowGrid(false);
-    setSelectedImages([]);
-  };
-  // Find group for an image
   const findGroupIdx = (imgIdx) => groups.findIndex(group => group.includes(imgIdx));
+  const selectedGroupIdx = groups.findIndex(
+    g => g.length === selectedImages.length && selectedImages.every(idx => g.includes(idx))
+  );
 
-  // Submit only first group (simulate backend auto-categorization)
-  const handleSubmit = (e) => {
+  //   NEW: Vision on grouping done  
+  const handleDoneGrouping = async () => {
+    setLoadingAI(true);
+    try {
+      const userId = session?.user?.id || "anonymous";
+      const groupedImageFiles = groups.map(g => g.map(idx => images[idx]));
+      const mainGroup = groupedImageFiles[0] || (images.length ? images : []);
+      let uploadedUrls = [];
+      for (let file of mainGroup) {
+        const url = await uploadImage(file, userId);
+        uploadedUrls.push(url);
+      }
+      console.log("Uploading images to Supabase and sending these URLs to Vision:", uploadedUrls);
+      const visionResults = await fetchVisionLabels(uploadedUrls);
+
+      // Autofill tags and description using Vision labels (first image) 
+      if (visionResults && visionResults.length) {
+  // Labels
+  if (visionResults[0].labels) {
+    setItemTags(prev => Array.from(new Set([...prev, ...visionResults[0].labels])));
+    setDescription(prev => prev ? prev : `AI: ${visionResults[0].labels.join(", ")}`);
+  }
+  // Brands
+  if (visionResults[0].brands && visionResults[0].brands.length) {
+    setItemTags(prev => Array.from(new Set([...prev, ...visionResults[0].brands, ...prev])));
+  }
+  // Colors
+  if (visionResults[0].colors && visionResults[0].colors.length) {
+    setColorTags(visionResults[0].colors);
+  }
+}
+setImages(uploadedUrls);
+    } catch (err) {
+      alert("Image upload or Vision failed: " + err.message);
+    }
+    setLoadingAI(false);
+    setShowGrid(false);
+  };
+
+  //   Submit after AI suggestions  
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    // Everything is already uploaded/AI'd, just call onAdd
+    const userId = session?.user?.id || "anonymous";
     const groupedImageFiles = groups.map(g => g.map(idx => images[idx]));
-    const mainGroup = groupedImageFiles[0] || (images.length ? [images[0]] : []);
+    const mainGroup = groupedImageFiles[0] || (images.length ? images : []);
+    let uploadedUrls = [];
+    for (let file of mainGroup) {
+      // If file is a string, it's already a URL; if File, needs upload
+      if (typeof file === "string") uploadedUrls.push(file);
+    }
     onAdd({
       itemName,
       description,
-      images: mainGroup,
+      images: uploadedUrls,
       colorTags,
       itemTags,
       allGroups: groupedImageFiles,
     });
-    setItemName("");
-    setDescription("");
-    setImages([]);
-    setColorTags([]);
-    setItemTags([]);
-    setGroups([]);
-    setGroupColors([]);
+    // Reset
+    setItemName(""); setDescription(""); setImages([]);
+    setColorTags([]); setItemTags([]); setGroups([]); setGroupColors([]);
+  };
+
+  // Render helper for images
+  const renderImage = (img) => {
+    if (img instanceof File || img instanceof Blob) {
+      return URL.createObjectURL(img);
+    } else if (typeof img === "string") {
+      return img;
+    }
+    return "";
   };
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      {/* Loading overlay */}
+      {loadingAI && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/90 backdrop-blur-2xl">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-8"></div>
+          <div className="text-xl font-bold text-gray-700">Analyzing images with AI…</div>
+        </div>
+      )}
+
       <style>
         {`
         .weavd-scroll::-webkit-scrollbar {
@@ -124,14 +208,18 @@ export default function AddItemsModal({ show, onClose, onAdd }) {
           relative p-3 sm:p-8 flex flex-col
           overflow-x-hidden overflow-y-hidden
         "
-        style={{ WebkitBackdropFilter: "blur(20px)" }}
+        style={{
+          WebkitBackdropFilter: "blur(20px)",
+          filter: loadingAI ? "blur(3px)" : "none",
+          pointerEvents: loadingAI ? "none" : "auto",
+        }}
       >
-        {/* --- Select/Group Overlay Grid --- */}
+        {/*   Select/Group Overlay Grid   */}
         {showGrid && (
           <div
             className="absolute inset-0 bg-white/95 flex flex-col justify-between items-center rounded-2xl z-50 p-6"
             style={{
-              minHeight: "80vh",
+              height: "70vh",
               animation: "fadeIn 0.15s"
             }}
           >
@@ -148,49 +236,79 @@ export default function AddItemsModal({ show, onClose, onAdd }) {
                   <div
                     key={idx}
                     onClick={() => handleSelectGrid(idx)}
-                    className={`rounded-xl bg-gray-400 overflow-hidden cursor-pointer border-4 transition`}
                     style={{
+                      width: "100px",
                       height: "100px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderColor,
+                      border: `4px solid ${borderColor}`,
+                      borderRadius: "18px",
+                      overflow: "hidden",
                       boxShadow: selectedImages.includes(idx)
                         ? "0 0 0 2px #1976d2"
                         : groupIdx !== -1
-                        ? `0 0 0 4px ${borderColor}99`
-                        : "",
-                      opacity: groupIdx === -1 || selectedImages.includes(idx) ? 1 : 0.5,
+                          ? `0 0 0 4px ${borderColor}99`
+                          : "",
+                      cursor: "pointer",
+                      margin: "0 auto"
                     }}
                   >
                     <img
-                      src={URL.createObjectURL(img)}
+                      src={renderImage(img)}
                       alt={`grid-img-${idx}`}
-                      className="object-cover w-full h-full"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        display: "block"
+                      }}
                     />
                   </div>
                 );
               })}
             </div>
             {/* Group and Done Buttons */}
-            <div className="w-full flex gap-6 justify-center">
+            <div
+              className="w-full flex gap-6 justify-center"
+              style={{
+                position: "absolute",
+                left: 0,
+                bottom: 120,
+                padding: "0 2vw",
+                zIndex: 102,
+                background: "rgba(247, 247, 247, 0.95)",
+                borderRadius: "0 0 1.2rem 1.2rem",
+                boxShadow: "0 -4px 24px #0001"
+              }}
+            >
+              {selectedGroupIdx !== -1 ? (
+                <button
+                  className="flex-1 py-3 rounded-full bg-black hover:bg-red-800 text-white shadow transition font-bold"
+                  onClick={() => {
+                    setGroups(groups.filter((_, i) => i !== selectedGroupIdx));
+                    setGroupColors(groupColors.filter((_, i) => i !== selectedGroupIdx));
+                    setSelectedImages([]);
+                  }}
+                >
+                  Ungroup
+                </button>
+              ) : (
+                <button
+                  className="flex-1 py-3 rounded-full bg-black hover:bg-blue-800 text-white shadow transition font-bold"
+                  disabled={selectedImages.length === 0}
+                  onClick={handleGroupImages}
+                >
+                  Group ({selectedImages.length || "0"} / 5)
+                </button>
+              )}
               <button
-                className="flex-1 py-3 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow transition font-semibold"
-                disabled={selectedImages.length === 0}
-                onClick={handleGroupImages}
-              >
-                Group ({selectedImages.length || "0"} / 5)
-              </button>
-              <button
-                className="flex-1 py-3 rounded-full bg-gray-500 hover:bg-gray-600 text-white shadow transition"
-                onClick={handleCloseGrid}
+                className="flex-1 py-3 rounded-full bg-red-700 hover:bg-red-900 text-white shadow transition font-bold"
+                onClick={handleDoneGrouping}
               >
                 Done
               </button>
             </div>
             {/* Close grid button */}
             <button
-              onClick={handleCloseGrid}
+              onClick={() => { setShowGrid(false); setSelectedImages([]); }}
               className="absolute top-4 right-4 text-2xl text-black"
               aria-label="Close"
             >
@@ -199,7 +317,7 @@ export default function AddItemsModal({ show, onClose, onAdd }) {
           </div>
         )}
 
-        {/* --- Main Modal Content (fades/disables under overlay) --- */}
+        {/*   Main Modal Content (fades/disables under overlay)   */}
         <div style={{
           opacity: showGrid ? 0.18 : 1,
           pointerEvents: showGrid ? "none" : "auto",
@@ -214,20 +332,20 @@ export default function AddItemsModal({ show, onClose, onAdd }) {
           </button>
           <h2 className="text-2xl font-bold mb-6 text-center">Add Clothing Item</h2>
           <form onSubmit={handleSubmit}>
-            {/* --- Fan Layout --- */}
+            {/*   Fan Layout   */}
             <div
               className="mb-0"
               style={{
                 height: "240px",
                 overflow: "hidden",
                 position: "relative",
-                marginBottom: "-24px",
+                marginBottom: "60px",
                 width: "100vw",
                 maxWidth: "100%",
               }}
             >
               <div
-                className="flex items-start weavd-scroll"
+                className="flex items-end weavd-scroll"
                 style={{
                   overflowX: "auto",
                   overflowY: "hidden",
@@ -265,7 +383,6 @@ export default function AddItemsModal({ show, onClose, onAdd }) {
                 >
                   +
                 </label>
-                {/* Show only first group in the fan (or all if no groups yet) */}
                 {(groups.length > 0
                   ? groups[0]
                   : images.map((_, idx) => idx)
@@ -281,7 +398,7 @@ export default function AddItemsModal({ show, onClose, onAdd }) {
                         zIndex: isHovered ? 9999 : 100 - idx,
                         minWidth: "112px",
                         width: "112px",
-                        height: "200px",
+                        height: "160px",
                         marginLeft: idx === 0 ? "-28px" : "-28px",
                         overflow: "visible",
                         alignSelf: "flex-end",
@@ -290,66 +407,53 @@ export default function AddItemsModal({ show, onClose, onAdd }) {
                       onMouseEnter={() => setHoveredIdx(idx)}
                       onMouseLeave={() => setHoveredIdx(null)}
                     >
-                      <div
+                      <img
+                        src={renderImage(img)}
+                        alt="preview"
                         style={{
-                          width: "112px",
-                          height: "160px",
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
                           border: groupIdx !== -1
                             ? `4px solid ${groupColors[groupIdx]}`
                             : "4px solid transparent",
-                          transform: isHovered ? "translateY(44px) scale(1.13)" : "none",
-                          transition: "transform 0.22s, box-shadow 0.22s, border 0.2s",
-                          zIndex: isHovered ? 10000 : 100 - idx,
+                          borderRadius: "18px",
+                          background: "#eee",
+                          boxShadow: isHovered ? "0 8px 36px #0003" : "",
+                          pointerEvents: "auto",
                         }}
+                        draggable={false}
+                      />
+                      {/* X Button */}
+                      <button
+                        type="button"
+                        onClick={() => removeImage(idx)}
+                        className="absolute"
+                        style={{
+                          top: "10px",
+                          right: "10px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: "28px",
+                          height: "28px",
+                          fontSize: "1.3rem",
+                          color: "#222",
+                          background: "rgba(255,255,255,0.65)",
+                          borderRadius: "50%",
+                          border: "1.5px solid rgba(255,255,255,0.7)",
+                          boxShadow: "0 2px 8px #0001, 0 1.5px 4px #0002",
+                          backdropFilter: "blur(8px)",
+                          WebkitBackdropFilter: "blur(8px)",
+                          zIndex: 10001,
+                          cursor: "pointer",
+                          transition: "background 0.18s, color 0.18s"
+                        }}
+                        tabIndex={-1}
+                        aria-label="Remove image"
                       >
-                        <img
-                          src={URL.createObjectURL(img)}
-                          alt="preview"
-                          className="w-28 h-40 rounded-[18px] border border-gray-300 object-cover bg-[#eee]"
-                          draggable={false}
-                          style={{
-                            objectFit: "cover",
-                            width: "100%",
-                            height: "100%",
-                            boxShadow: isHovered ? "0 8px 36px #0003" : "",
-                            background: "#eee",
-                            pointerEvents: "auto",
-                          }}
-                        />
-                        {/* X Button */}
-                        <button
-                          type="button"
-                          onClick={() => removeImage(idx)}
-                          className="absolute"
-                          style={{
-                            top: "10px",
-                            right: "10px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: "28px",
-                            height: "28px",
-                            fontSize: "1.3rem",
-                            color: "#222",
-                            background: "rgba(255,255,255,0.65)",
-                            borderRadius: "50%",
-                            border: "1.5px solid rgba(255,255,255,0.7)",
-                            boxShadow: "0 2px 8px #0001, 0 1.5px 4px #0002",
-                            backdropFilter: "blur(8px)",
-                            WebkitBackdropFilter: "blur(8px)",
-                            zIndex: 10001,
-                            cursor: "pointer",
-                            transition: "background 0.18s, color 0.18s"
-                          }}
-                          tabIndex={-1}
-                          aria-label="Remove image"
-                        >
-                          ×
-                        </button>
-                      </div>
+                        ×
+                      </button>
                     </div>
                   );
                 })}

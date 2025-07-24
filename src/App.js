@@ -8,6 +8,8 @@ import Closet from "./pages/Closet";
 import Explore from "./pages/Explore";
 import Profile from "./pages/Profile";
 import Sidebar from "./components/Sidebar";
+import { SessionContextProvider } from '@supabase/auth-helpers-react';
+import { supabase } from './utils/supabase';
 
 function AppShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -39,9 +41,12 @@ function AppShell() {
 }
 
 export default function App() {
+  // Only use the client you exported
   return (
-    <Router>
-      <AppShell />
-    </Router>
+    <SessionContextProvider supabaseClient={supabase}>
+      <Router>
+        <AppShell />
+      </Router>
+    </SessionContextProvider>
   );
 }

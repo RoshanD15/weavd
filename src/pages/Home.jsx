@@ -10,7 +10,7 @@ export default function Home() {
         Welcome to weavd!
       </h1>
       <p className="text-lg text-gray-700 mb-8">
-        Track, discover, and manage your fragrance Closet.
+        Track, discover, and Share your Closet.
       </p>
       <div className="flex flex-col gap-4 mb-4 max-w-xs">
         <button
