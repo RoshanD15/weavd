@@ -22,3 +22,5 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.env
+GOOGLE_APPLICATION_CREDENTIALS=neon-alcove-466216-r1-1932ca227b5b.json
