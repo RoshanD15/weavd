@@ -46,7 +46,7 @@ app.post('/vision', async (req, res) => {
 });
 
 app.get('/test-vision', async (req, res) => {
-  const testUrl = "https://tijpxhgdqcwofkaaxqri.supabase.co/storage/v1/object/public/post-photos/68c1be82-43db-4cd7-b648-431810fa7321/1753301861170-Screenshot%20(35).png";
+  const testUrl = "https:/../firebasestorage.googleapis.com/v0/b/YOUR_PROJECT_ID.appspot.com/o/path%2Fto%2Ffile.png?alt=media&token=...";
   try {
     const [result] = await client.labelDetection(testUrl);
     const labels = result.labelAnnotations

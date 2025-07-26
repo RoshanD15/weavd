@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import { supabase } from "../supabaseClient"; // Make sure you have this file set up as above!
+import { auth } from "../firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -14,15 +18,22 @@ export default function SignUp() {
     setError("");
     setMessage("");
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    if (password !== confirmPassword) {
+      setError("Passwords must match.");
+      setLoading(false);
+      return;
+    }
 
-    if (error) {
-      setError(error.message);
-    } else {
-      setMessage("Check your email for a confirmation link!");
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      setMessage("Account created! Redirecting to your profile...");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+      // Redirect to profile after signup
+      navigate("/profile");
+    } catch (err) {
+      setError(err.message);
     }
     setLoading(false);
   };
@@ -48,13 +59,29 @@ export default function SignUp() {
           type="password"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          placeholder="Password"
+          placeholder="Password (min 6 chars)"
           required
           className="w-full border rounded p-2"
+          minLength={6}
+        />
+        <input
+          type="password"
+          value={confirmPassword}
+          onChange={e => setConfirmPassword(e.target.value)}
+          placeholder="Re-type Password"
+          required
+          className="w-full border rounded p-2"
+          minLength={6}
         />
         <button
           type="submit"
-          disabled={loading}
+          disabled={
+            loading ||
+            !email ||
+            !password ||
+            !confirmPassword ||
+            password !== confirmPassword
+          }
           className="w-full bg-primary text-gray py-2 px-4 rounded"
         >
           {loading ? "Signing up..." : "Sign Up"}

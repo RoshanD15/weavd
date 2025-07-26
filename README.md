@@ -1,5 +1,5 @@
 # weavd
-A web app to track and visualize personal fragrance Closets and usage stats.
+A web app to track and visualize personal fragrance MyClosets and usage stats.
 ## Features
 - Secure user authentication and login
 - Add, edit, and remove Items in your personal wardrobe
@@ -23,7 +23,7 @@ A web app to track and visualize personal fragrance Closets and usage stats.
 - Dark mode toggle
 
 ## Inspiration
-Built to solve the frustration of tracking and organizing a personal fragrance Closet. As well as providing nice quality of life features and UI guided by market research and user feedback, built on feedback from the fragrance collector community.
+Built to solve the frustration of tracking and organizing a personal fragrance MyCloset. As well as providing nice quality of life features and UI guided by market research and user feedback, built on feedback from the fragrance collector community.
 
 ## Author
 Roshan Dayananda – [LinkedIn](https://www.linkedin.com/in/roshan-dayananda/) – [GitHub](https://github.com/[yourusername])

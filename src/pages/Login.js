@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { supabase } from "../supabaseClient";
+import { auth } from "../firebase";
+import { signInWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
@@ -15,28 +16,17 @@ export default function Login() {
     setLoading(true);
     setError("");
 
-    // Set session storage type before login
-    supabase.auth.setSession({
-      persistSession: rememberMe, // handled automatically, but explicit for future-proofing
-    });
+    // Set session persistence based on "Remember Me"
+    const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-      options: {
-        // Session persistence based on "remember me"
-        // This works with Supabase v2+ (supabase-js 2.x+)
-        // For older versions, use: supabase.auth.setPersistence("session"/"local")
-        // New: Use options for persistSession, see docs
-        persistSession: rememberMe
-      }
-    });
-
-    if (error) {
-      setError(error.message);
-    } else {
-      navigate("/Closet");
+    try {
+      await setPersistence(auth, persistenceType);
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/MyCloset");
+    } catch (err) {
+      setError(err.message);
     }
+
     setLoading(false);
   };
 

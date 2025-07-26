@@ -2,3 +2,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+.my-masonry-grid {
+  display: flex;
+  margin-left: -0.5rem; /* gutter size offset */
+  width: auto;
+}
+.my-masonry-grid_column {
+  padding-left: 0.5rem; /* gutter size */
+  background-clip: padding-box;
+}

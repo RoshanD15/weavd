@@ -1,5 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',  // <-- add this line to enable class-based dark mode
+
   // 1. Tell Tailwind which files to scan for class names:
   content: [
     "./src/**/*.{js,jsx,ts,tsx}", // all React components

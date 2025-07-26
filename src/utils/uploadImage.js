@@ -1,19 +1,14 @@
-import { supabase } from './supabase';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../firebase";
+import { v4 as uuid } from "uuid";
 
-export async function uploadImage(file, userId) {
-  const filePath = `${userId}/${Date.now()}-${file.name}`;
-  const { data, error } = await supabase
-    .storage
-    .from('post-photos')
-    .upload(filePath, file);
-  if (error) throw error;
+export async function uploadImageToFirebase(file, userId, isTemporary = true) {
+  const folder = isTemporary ? 'temp' : 'images';
+  const filePath = `${folder}/${userId}/${uuid()}_${file.name}`;
+  
+  const storageRef = ref(storage, filePath);
+  await uploadBytes(storageRef, file);
 
-  // Correct way to get the public URL
-  const { data: urlData, error: urlError } = supabase
-    .storage
-    .from('post-photos')
-    .getPublicUrl(filePath);
-  if (urlError) throw urlError;
-  console.log('getPublicUrl data:', urlData);
-  return urlData.publicUrl;
+  const url = await getDownloadURL(storageRef);
+  return { url, path: filePath };
 }
