@@ -8,9 +8,9 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 
-const client = new vision.ImageAnnotatorClient({
-  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
-});
+const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+const client = new vision.ImageAnnotatorClient({ credentials });
+
 
 function rgbToHex(r, g, b) {
   return (
