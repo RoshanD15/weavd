@@ -6,6 +6,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 function timeoutPromise(promise, ms = 6000) {
   return Promise.race([
@@ -16,7 +17,7 @@ function timeoutPromise(promise, ms = 6000) {
 
 async function fetchVisionLabels(imageUrls) {
   return timeoutPromise(
-    fetch("http://localhost:4000/vision", {
+    fetch(`${backendUrl}/vision`, { 
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ imageUrls }),
