@@ -4,6 +4,7 @@ import { collection, query, where, doc, getDocs,getDoc, setDoc } from "firebase/
 import { updateProfile } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import DarkModeToggle from "../components/DarkModeToggle";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -13,6 +14,7 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
@@ -95,7 +97,19 @@ const Profile = () => {
   };
 
   if (loading) return <div style={{ flex: 1, padding: "2rem" }}>Loading profile...</div>;
-  if (!user) return <div>You are not logged in.</div>;
+ if (!user) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh]">
+      <div className="mb-4 text-xl">You are not logged in.</div>
+      <button
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-800 transition"
+        onClick={() => navigate("/")}
+      >
+        Sign in
+      </button>
+    </div>
+  );
+}
 
   return (
     <main className="flex-1 p-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
