@@ -35,7 +35,7 @@ async function fetchVisionLabels(imageUrls) {
   );
 }
 
-export default function AddItemsModal({ show, onClose, onAdd }) {
+ export default function AddItemsModal({ show, onClose, onAdd, onGroupsChange }) {
   const [itemName, setItemName] = useState("");
   const [description, setDescription] = useState("");
   const [images, setImages] = useState([]); // [File or { url, path }]
@@ -118,10 +118,12 @@ export default function AddItemsModal({ show, onClose, onAdd }) {
     }
   };
   const handleGroupImages = () => {
-    if (selectedImages.length === 0) return;
-    setGroups(prev => [...prev, [...selectedImages]]);
-    setGroupColors(prev => [...prev, GROUP_PALETTE[prev.length % GROUP_PALETTE.length]]);
-    setSelectedImages([]);
+     if (selectedImages.length === 0) return;
+  const updatedGroups = [...groups, [...selectedImages]];
+  setGroups(updatedGroups);
+  if (onGroupsChange) onGroupsChange(updatedGroups); // << this is the line that notifies your parent!
+  setGroupColors(prev => [...prev, GROUP_PALETTE[prev.length % GROUP_PALETTE.length]]);
+  setSelectedImages([]);
   };
   const findGroupIdx = (imgIdx) => groups.findIndex(group => group.includes(imgIdx));
   const selectedGroupIdx = groups.findIndex(

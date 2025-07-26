@@ -8,6 +8,9 @@ import AddItemsModal from "../components/AddItemsModal";
 import Masonry from "react-masonry-css";
 
 // 1. Masonry breakpoints
+
+
+
 const breakpointColumnsObj = {
   default: 6,   // 6 columns for extra large screens
   1536: 5,      // 5 columns when width >= 1536px (2xl Tailwind)
@@ -22,6 +25,8 @@ export default function MyCloset() {
   const [user] = useAuthState(auth);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+
 
   useEffect(() => {
     if (!user) return;
@@ -58,12 +63,20 @@ export default function MyCloset() {
       : [];
 
   const handleOpenModal = () => setShowModal(true);
-
-  const handleAdd = (itemData) => {
-    setShowModal(false);
-    setCurrentGroupIdx(0);
-    // Optionally, refresh Closet items here
+ const handleGroupsChange = (newGroups) => {
+  console.log("[MyCloset] Received new groups from modal:", newGroups);
+    setGroups(newGroups);
   };
+  const handleAdd = (itemData) => {
+  if (currentGroupIdx < groups.length - 1) {
+    setCurrentGroupIdx(currentGroupIdx + 1); // Move to next group!
+  } else {
+    setShowModal(false); // All groups handled, close modal
+    setCurrentGroupIdx(0); // Reset for next time
+    setGroups([]);         // Optional: clear group state after finishing
+    setAllImages([]);      // Optional: clear images state after finishing
+  }
+};
 
   return (
     <>
@@ -103,6 +116,7 @@ export default function MyCloset() {
         images={imagesForModal}
         onClose={() => setShowModal(false)}
         onAdd={handleAdd}
+        onGroupsChange={handleGroupsChange}
       />
 
       {/* 3. Basic Masonry grid CSS (add this globally or in your main css file) */}
