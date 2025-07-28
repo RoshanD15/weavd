@@ -15,10 +15,12 @@ import DarkModeToggle from "../components/DarkModeToggle";
 import { useNavigate } from "react-router-dom";
 
 const BACKGROUND_PRESETS = [
-  { id: "preset1", label: "Clean White", url: "/backgrounds/bg1.jpg" },
-  { id: "preset2", label: "Dark Tech", url: "/backgrounds/bg2.jpg" },
-  { id: "preset3", label: "Soft Pastel", url: "/backgrounds/bg3.jpg" },
-  { id: "preset4", label: "Vintage Film", url: "/backgrounds/bg4.jpg" },
+  { id: "BackgroundBeach", label: "Beach", url: "/BackgroundBeach.jpg" },
+  { id: "BackgroundBooks", label: "Books", url: "/BackgroundBooks.jpg" },
+  { id: "BackgroundConcrete", label: "Concrete", url: "/BackgroundConcrete.jpg" },
+  { id: "BackgroundDark", label: "Dark", url: "/BackgroundDark.jpg" },
+  { id: "BackgroundGreen", label: "Green", url: "/BackgroundGreen.jpg" },
+  { id: "BackgroundWood", label: "Wood", url: "/BackgroundWood.jpg" },
 ];
 
 const Profile = () => {
