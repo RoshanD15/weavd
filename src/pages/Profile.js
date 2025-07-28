@@ -1,14 +1,30 @@
 import React, { useEffect, useState, useRef } from "react";
 import { auth, db, storage } from "../firebase";
-import { collection, query, where, doc, getDocs,getDoc, setDoc } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  doc,
+  getDocs,
+  getDoc,
+  setDoc,
+} from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import DarkModeToggle from "../components/DarkModeToggle";
 import { useNavigate } from "react-router-dom";
 
+const BACKGROUND_PRESETS = [
+  { id: "preset1", label: "Clean White", url: "/backgrounds/bg1.jpg" },
+  { id: "preset2", label: "Dark Tech", url: "/backgrounds/bg2.jpg" },
+  { id: "preset3", label: "Soft Pastel", url: "/backgrounds/bg3.jpg" },
+  { id: "preset4", label: "Vintage Film", url: "/backgrounds/bg4.jpg" },
+];
+
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [profileData, setProfileData] = useState({ displayName: "", photoURL: "" });
+  const [backgroundChoice, setBackgroundChoice] = useState("");
   const [loading, setLoading] = useState(true);
   const [editName, setEditName] = useState("");
   const [saving, setSaving] = useState(false);
@@ -29,6 +45,7 @@ const Profile = () => {
             photoURL: data.photoURL || currentUser.photoURL || "",
           });
           setEditName(data.displayName || currentUser.displayName || "");
+          setBackgroundChoice(data.settings?.background || "");
         }
       }
       setLoading(false);
@@ -38,47 +55,53 @@ const Profile = () => {
   }, []);
 
   const saveProfile = async () => {
-  if (!user) return;
+    if (!user) return;
 
-  // Trim display name to avoid whitespace issues
-  const trimmedName = editName.trim();
-  if (!trimmedName) {
-    alert("Display name cannot be empty.");
-    return;
-  }
-
-  setSaving(true);
-
-  try {
-    // Query Firestore for users with the same displayName
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("displayName", "==", trimmedName));
-    const querySnapshot = await getDocs(q);
-
-    // Check if any other user has this displayName
-    const isTaken = querySnapshot.docs.some(doc => doc.id !== user.uid);
-
-    if (isTaken) {
-      alert("Display name is already taken. Please choose another.");
-      setSaving(false);
+    const trimmedName = editName.trim();
+    if (!trimmedName) {
+      alert("Display name cannot be empty.");
       return;
     }
 
-    // Save displayName and photoURL if unique
-    const docRef = doc(db, "users", user.uid);
-    await setDoc(docRef, { displayName: trimmedName, photoURL: profileData.photoURL }, { merge: true });
-    await updateProfile(user, { displayName: trimmedName, photoURL: profileData.photoURL });
+    setSaving(true);
 
-    setProfileData(prev => ({ ...prev, displayName: trimmedName }));
-    setEditName(trimmedName);
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("displayName", "==", trimmedName));
+      const querySnapshot = await getDocs(q);
+      const isTaken = querySnapshot.docs.some((doc) => doc.id !== user.uid);
 
-  } catch (err) {
-    console.error("Error saving profile:", err);
-    alert("Failed to save profile.");
-  }
+      if (isTaken) {
+        alert("Display name is already taken. Please choose another.");
+        setSaving(false);
+        return;
+      }
 
-  setSaving(false);
-};
+      const docRef = doc(db, "users", user.uid);
+      await setDoc(
+        docRef,
+        {
+          displayName: trimmedName,
+          photoURL: profileData.photoURL,
+          settings: { background: backgroundChoice },
+        },
+        { merge: true }
+      );
+      await updateProfile(user, {
+        displayName: trimmedName,
+        photoURL: profileData.photoURL,
+      });
+
+      setProfileData((prev) => ({ ...prev, displayName: trimmedName }));
+      setEditName(trimmedName);
+    } catch (err) {
+      console.error("Error saving profile:", err);
+      alert("Failed to save profile.");
+    }
+
+    setSaving(false);
+  };
+
   const handleFileChange = async (e) => {
     if (!user) return;
     const file = e.target.files[0];
@@ -96,20 +119,22 @@ const Profile = () => {
     setUploading(false);
   };
 
-  if (loading) return <div style={{ flex: 1, padding: "2rem" }}>Loading profile...</div>;
- if (!user) {
-  return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh]">
-      <div className="mb-4 text-xl">You are not logged in.</div>
-      <button
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-800 transition"
-        onClick={() => navigate("/")}
-      >
-        Sign in
-      </button>
-    </div>
-  );
-}
+  if (loading)
+    return <div style={{ flex: 1, padding: "2rem" }}>Loading profile...</div>;
+
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh]">
+        <div className="mb-4 text-xl">You are not logged in.</div>
+        <button
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-800 transition"
+          onClick={() => navigate("/")}
+        >
+          Sign in
+        </button>
+      </div>
+    );
+  }
 
   return (
     <main className="flex-1 p-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -120,23 +145,23 @@ const Profile = () => {
 
       <div className="mb-6">
         <div
-  className="rounded-full w-24 h-24 mb-4 cursor-pointer border border-gray-400 dark:border-gray-700 overflow-hidden"
-  onClick={() => fileInputRef.current.click()}
-  aria-label="Upload Profile Picture"
-  title="Click to upload profile picture"
->
-  {profileData.photoURL ? (
-    <img
-      src={profileData.photoURL}
-      alt="Profile"
-      className="w-full h-full object-cover"
-    />
-  ) : (
-    <div className="flex items-center justify-center w-full h-full bg-gray-300 dark:bg-gray-700 text-gray-600">
-      No Image
-    </div>
-  )}
-</div>
+          className="rounded-full w-24 h-24 mb-4 cursor-pointer border border-gray-400 dark:border-gray-700 overflow-hidden"
+          onClick={() => fileInputRef.current.click()}
+          aria-label="Upload Profile Picture"
+          title="Click to upload profile picture"
+        >
+          {profileData.photoURL ? (
+            <img
+              src={profileData.photoURL}
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="flex items-center justify-center w-full h-full bg-gray-300 dark:bg-gray-700 text-gray-600">
+              No Image
+            </div>
+          )}
+        </div>
         <input
           type="file"
           ref={fileInputRef}
@@ -151,18 +176,43 @@ const Profile = () => {
           value={editName}
           onChange={(e) => setEditName(e.target.value)}
           placeholder="Display Name"
-          className="border p-2 rounded w-full mb-4
-             bg-white text-gray-900
-             dark:bg-gray-800 dark:text-gray-100"
+          className="border p-2 rounded w-full mb-4 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100"
         />
 
+        {/* 🎨 Background Preset Section */}
+        <div className="mb-4">
+          <h3 className="mb-2 font-semibold">Choose Background</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {BACKGROUND_PRESETS.map((preset) => (
+              <div
+                key={preset.id}
+                onClick={() => setBackgroundChoice(preset.id)}
+                className={`cursor-pointer border-4 rounded overflow-hidden transition duration-200 ${
+                  backgroundChoice === preset.id
+                    ? "border-blue-500"
+                    : "border-transparent"
+                }`}
+              >
+                <img
+                  src={preset.url}
+                  alt={preset.label}
+                  className="w-full h-20 object-cover"
+                />
+                <div className="text-center text-sm bg-gray-100 dark:bg-gray-800 py-1">
+                  {preset.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <button
-  onClick={saveProfile}
-  disabled={saving || uploading}
-  className="bg-gray-700 dark:bg-gray-300 text-white dark:text-gray-900 py-2 px-4 rounded-lg disabled:opacity-50"
->
-  {saving ? "Saving..." : uploading ? "Uploading..." : "Save Profile"}
-</button>
+          onClick={saveProfile}
+          disabled={saving || uploading}
+          className="bg-gray-700 dark:bg-gray-300 text-white dark:text-gray-900 py-2 px-4 rounded-lg disabled:opacity-50"
+        >
+          {saving ? "Saving..." : uploading ? "Uploading..." : "Save Profile"}
+        </button>
       </div>
 
       <p>
