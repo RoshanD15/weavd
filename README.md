@@ -1,5 +1,10 @@
 # weavd
 A web app to track and visualize your personal closet.
+
+Deployment/Live Demo :
+
+https://weavd.vercel.app
+
 ## Features
 - Secure user authentication and login
 - Add, edit, and remove Items in your personal wardrobe
