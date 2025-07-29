@@ -27,7 +27,7 @@ export const BackgroundProvider = ({ children }) => {
   }, []);
 
   return (
-    <BackgroundContext.Provider value={{ backgroundUrl, refreshBackground: refreshBackground }}>
+    <BackgroundContext.Provider value={{ backgroundUrl, refreshBackground: fetchBackground }}>
       {children}
     </BackgroundContext.Provider>
   );
