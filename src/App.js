@@ -1,8 +1,7 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-import { auth, db } from "./firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { BackgroundProvider, useBackground } from "./context/Background";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -13,8 +12,6 @@ import Profile from "./pages/Profile";
 import Sidebar from "./components/Sidebar";
 import PostDetail from "./pages/PostDetail";
 import Closet from "./pages/Closet";
-import { useBackground } from "./context/Background";
-
 
 function AppShell() {
   const { backgroundUrl } = useBackground();
@@ -60,8 +57,10 @@ function AppShell() {
 
 export default function App() {
   return (
-    <Router>
-      <AppShell />
-    </Router>
+    <BackgroundProvider> {/* wrap here */}
+      <Router>
+        <AppShell />
+      </Router>
+    </BackgroundProvider>
   );
 }
