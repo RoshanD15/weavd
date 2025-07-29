@@ -7,7 +7,6 @@ const BackgroundContext = createContext();
 export const BackgroundProvider = ({ children }) => {
   const [backgroundUrl, setBackgroundUrl] = useState("");
 
-  // Make sure this is ABOVE useEffect and the return!
   const fetchBackground = async () => {
     const user = auth.currentUser;
     if (user) {
@@ -27,7 +26,10 @@ export const BackgroundProvider = ({ children }) => {
   }, []);
 
   return (
-    <BackgroundContext.Provider value={{ backgroundUrl, refreshBackground: fetchBackground }}>
+    <BackgroundContext.Provider value={{
+      backgroundUrl,
+      refreshBackground: fetchBackground
+    }}>
       {children}
     </BackgroundContext.Provider>
   );
