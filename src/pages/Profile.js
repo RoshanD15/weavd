@@ -13,6 +13,7 @@ import { updateProfile } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import DarkModeToggle from "../components/DarkModeToggle";
 import { useNavigate } from "react-router-dom";
+import { useBackground } from "../context/BackgroundContext";
 
 const BACKGROUND_PRESETS = [
   { id: "BackgroundBeach", label: "Beach", url: "/BackgroundBeach.jpg" },
@@ -33,6 +34,7 @@ const Profile = () => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+  const { refreshBackground } = useBackground();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
@@ -68,38 +70,41 @@ const Profile = () => {
     setSaving(true);
 
     try {
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("displayName", "==", trimmedName));
-      const querySnapshot = await getDocs(q);
-      const isTaken = querySnapshot.docs.some((doc) => doc.id !== user.uid);
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("displayName", "==", trimmedName));
+  const querySnapshot = await getDocs(q);
+  const isTaken = querySnapshot.docs.some((doc) => doc.id !== user.uid);
 
-      if (isTaken) {
-        alert("Display name is already taken. Please choose another.");
-        setSaving(false);
-        return;
-      }
+  if (isTaken) {
+    alert("Display name is already taken. Please choose another.");
+    setSaving(false);
+    return;
+  }
 
-      const docRef = doc(db, "users", user.uid);
-      await setDoc(
-        docRef,
-        {
-          displayName: trimmedName,
-          photoURL: profileData.photoURL,
-          settings: { background: backgroundChoice },
-        },
-        { merge: true }
-      );
-      await updateProfile(user, {
-        displayName: trimmedName,
-        photoURL: profileData.photoURL,
-      });
+  const docRef = doc(db, "users", user.uid);
+  await setDoc(
+    docRef,
+    {
+      displayName: trimmedName,
+      photoURL: profileData.photoURL,
+      settings: { background: backgroundChoice },
+    },
+    { merge: true }
+  );
 
-      setProfileData((prev) => ({ ...prev, displayName: trimmedName }));
-      setEditName(trimmedName);
-    } catch (err) {
-      console.error("Error saving profile:", err);
-      alert("Failed to save profile.");
-    }
+  await updateProfile(user, {
+    displayName: trimmedName,
+    photoURL: profileData.photoURL,
+  });
+
+  await refreshBackground(); // ✅ ADD THIS HERE
+
+  setProfileData((prev) => ({ ...prev, displayName: trimmedName }));
+  setEditName(trimmedName);
+} catch (err) {
+  console.error("Error saving profile:", err);
+  alert("Failed to save profile.");
+}
 
     setSaving(false);
   };

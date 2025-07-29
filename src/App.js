@@ -13,29 +13,15 @@ import Profile from "./pages/Profile";
 import Sidebar from "./components/Sidebar";
 import PostDetail from "./pages/PostDetail";
 import Closet from "./pages/Closet";
+import { useBackground } from "./context/BackgroundContext";
+
 
 function AppShell() {
+  const { backgroundUrl } = useBackground();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [backgroundUrl, setBackgroundUrl] = useState("");
   const location = useLocation();
 
   const noSidebar = ["/login", "/signup", "/"].includes(location.pathname.toLowerCase());
-
-  useEffect(() => {
-    const fetchBackground = async () => {
-      const user = auth.currentUser;
-      if (user) {
-        const docRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(docRef);
-        const bgId = docSnap.data()?.settings?.background;
-        if (bgId) {
-          setBackgroundUrl(`/${bgId}.jpg`);
-        }
-      }
-    };
-
-    fetchBackground();
-  }, []);
 
   return (
     <div
@@ -53,8 +39,8 @@ function AppShell() {
           !noSidebar ? "pt-24 md:pt-8" : ""
         }`}
         style={{
-          backgroundColor: "rgba(255,255,255,0.85)", // optional blur effect
-          backdropFilter: "blur(2px)", // optional: nice with transparent cards
+          backgroundColor: "rgba(255,255,255,0.85)",
+          backdropFilter: "blur(2px)",
         }}
       >
         <Routes>
