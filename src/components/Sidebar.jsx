@@ -24,12 +24,15 @@ export default function Sidebar({ open, setOpen }) {
 
   return (
     <>
+      {/* Overlay for mobile */}
       <div
         className={`fixed inset-0 bg-black bg-opacity-20 z-20 transition-opacity duration-300 md:hidden ${
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         onClick={() => setOpen(false)}
       />
+
+      {/* Sidebar */}
       <div
         className={`
           z-30

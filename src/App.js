@@ -33,7 +33,7 @@ function AppShell() {
       {!noSidebar && <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />}
       <main
         className={`flex-1 p-8 transition-all duration-300 ${
-          !noSidebar ? "pt-24 md:pt-8" : ""
+          !noSidebar ? " pt-24 md:pt-8" : ""
         }`}
         style={{
           backgroundColor: "transparent",

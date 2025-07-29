@@ -37,75 +37,71 @@ const Profile = () => {
   const { refreshBackground } = useBackground();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        const docRef = doc(db, "users", currentUser.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setProfileData({
-            displayName: data.displayName || currentUser.displayName || "",
-            photoURL: data.photoURL || currentUser.photoURL || "",
-          });
-          setEditName(data.displayName || currentUser.displayName || "");
-          setBackgroundChoice(data.settings?.background || "");
-        }
-      }
-      setLoading(false);
-    });
-
+    const unsubscribe = auth.onAuthStateChanged(setUser);
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    (async () => {
+      const docRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setProfileData({
+          displayName: data.displayName || user.displayName || "",
+          photoURL: data.photoURL || user.photoURL || "",
+        });
+        setEditName(data.displayName || user.displayName || "");
+        setBackgroundChoice(data.settings?.background || "");
+      }
+      setLoading(false);
+    })();
+  }, [user]);
+
   const saveProfile = async () => {
     if (!user) return;
-
     const trimmedName = editName.trim();
     if (!trimmedName) {
       alert("Display name cannot be empty.");
       return;
     }
-
     setSaving(true);
-
     try {
-  const usersRef = collection(db, "users");
-  const q = query(usersRef, where("displayName", "==", trimmedName));
-  const querySnapshot = await getDocs(q);
-  const isTaken = querySnapshot.docs.some((doc) => doc.id !== user.uid);
-
-  if (isTaken) {
-    alert("Display name is already taken. Please choose another.");
-    setSaving(false);
-    return;
-  }
-
-  const docRef = doc(db, "users", user.uid);
-  await setDoc(
-    docRef,
-    {
-      displayName: trimmedName,
-      photoURL: profileData.photoURL,
-      settings: { background: backgroundChoice },
-    },
-    { merge: true }
-  );
-
-  await updateProfile(user, {
-    displayName: trimmedName,
-    photoURL: profileData.photoURL,
-  });
-
-  await refreshBackground(); // ✅ ADD THIS HERE
-
-  setProfileData((prev) => ({ ...prev, displayName: trimmedName }));
-  setEditName(trimmedName);
-} catch (err) {
-  console.error("Error saving profile:", err);
-  alert("Failed to save profile.");
-}
-
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("displayName", "==", trimmedName));
+      const querySnapshot = await getDocs(q);
+      const isTaken = querySnapshot.docs.some((doc) => doc.id !== user.uid);
+      if (isTaken) {
+        alert("Display name is already taken. Please choose another.");
+        setSaving(false);
+        return;
+      }
+      const docRef = doc(db, "users", user.uid);
+      await setDoc(
+        docRef,
+        {
+          displayName: trimmedName,
+          photoURL: profileData.photoURL,
+          settings: { background: backgroundChoice },
+        },
+        { merge: true }
+      );
+      await updateProfile(user, {
+        displayName: trimmedName,
+        photoURL: profileData.photoURL,
+      });
+      await refreshBackground();
+      setProfileData((prev) => ({ ...prev, displayName: trimmedName }));
+      setEditName(trimmedName);
+    } catch (err) {
+      console.error("Error saving profile:", err);
+      alert("Failed to save profile.");
+    }
     setSaving(false);
   };
 
@@ -113,7 +109,6 @@ const Profile = () => {
     if (!user) return;
     const file = e.target.files[0];
     if (!file) return;
-
     setUploading(true);
     try {
       const storageRef = ref(storage, `profileImages/${user.uid}/${file.name}`);
@@ -144,87 +139,104 @@ const Profile = () => {
   }
 
   return (
-    <main className="flex-1 p-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <div className="flex items-center justify-between mb-6">
-        <h2>Profile</h2>
-        <DarkModeToggle />
-      </div>
-
-      <div className="mb-6">
-        <div
-          className="rounded-full w-24 h-24 mb-4 cursor-pointer border border-gray-400 dark:border-gray-700 overflow-hidden"
-          onClick={() => fileInputRef.current.click()}
-          aria-label="Upload Profile Picture"
-          title="Click to upload profile picture"
-        >
-          {profileData.photoURL ? (
-            <img
-              src={profileData.photoURL}
-              alt="Profile"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="flex items-center justify-center w-full h-full bg-gray-300 dark:bg-gray-700 text-gray-600">
-              No Image
-            </div>
-          )}
+    <main className="flex-1 flex justify-center min-h-screen">
+      <div
+        className=" bg-white/60 dark:bg-gray-900/70
+    shadow-xl rounded-2xl p-10 max-w-xl w-full
+    backdrop-blur-lg border border-white/20 dark:border-gray-700 mx-auto mt-12"
+        style={{
+          boxShadow: "0 8px 32px 0 rgba(0,0,0,0.20)",
+          borderRadius: "1.5rem",           
+          padding: "2.5rem 2rem",
+          maxWidth: 100000,
+          width: "100%",
+          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter: "blur(10px)",
+          margin: "3rem 0"
+        }}
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">Profile</h2>
+          <DarkModeToggle />
         </div>
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          accept="image/*"
-          className="hidden"
-          aria-hidden="true"
-        />
 
-        <input
-          type="text"
-          value={editName}
-          onChange={(e) => setEditName(e.target.value)}
-          placeholder="Display Name"
-          className="border p-2 rounded w-full mb-4 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100"
-        />
-
-        {/* 🎨 Background Preset Section */}
-        <div className="mb-4">
-          <h3 className="mb-2 font-semibold">Choose Background</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {BACKGROUND_PRESETS.map((preset) => (
-              <div
-                key={preset.id}
-                onClick={() => setBackgroundChoice(preset.id)}
-                className={`cursor-pointer border-4 rounded overflow-hidden transition duration-200 ${
-                  backgroundChoice === preset.id
-                    ? "border-blue-500"
-                    : "border-transparent"
-                }`}
-              >
-                <img
-                  src={preset.url}
-                  alt={preset.label}
-                  className="w-full h-20 object-cover"
-                />
-                <div className="text-center text-sm bg-gray-100 dark:bg-gray-800 py-1">
-                  {preset.label}
-                </div>
+        <div className="mb-6">
+          <div
+            className="rounded-full w-24 h-24 mb-4 cursor-pointer border border-gray-400 dark:border-gray-700 overflow-hidden"
+            onClick={() => fileInputRef.current.click()}
+            aria-label="Upload Profile Picture"
+            title="Click to upload profile picture"
+          >
+            {profileData.photoURL ? (
+              <img
+                src={profileData.photoURL}
+                alt="Profile"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="flex items-center justify-center w-full h-full bg-gray-300 dark:bg-gray-700 text-gray-600">
+                No Image
               </div>
-            ))}
+            )}
           </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/*"
+            className="hidden"
+            aria-hidden="true"
+          />
+
+          <input
+            type="text"
+            value={editName}
+            onChange={(e) => setEditName(e.target.value)}
+            placeholder="Display Name"
+            className="border p-2 rounded w-full mb-4 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100"
+          />
+
+          
+          <div className="mb-4">
+            <h3 className="mb-2 font-semibold">Choose Background</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {BACKGROUND_PRESETS.map((preset) => (
+                <div
+                  key={preset.id}
+                  onClick={() => setBackgroundChoice(preset.id)}
+                  className={`cursor-pointer border-4 rounded overflow-hidden transition duration-200 ${
+                    backgroundChoice === preset.id
+                      ? "border-blue-500"
+                      : "border-transparent"
+                  }`}
+                >
+                  <img
+                    src={preset.url}
+                    alt={preset.label}
+                    className="w-full h-20 object-cover"
+                  />
+                  <div className="text-center text-sm bg-gray-100 dark:bg-gray-800 py-1">
+                    {preset.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={saveProfile}
+            disabled={saving || uploading}
+            className="bg-gray-700 dark:bg-gray-300 text-white dark:text-gray-900 py-2 px-4 rounded-lg disabled:opacity-50"
+          >
+            {saving ? "Saving..." : uploading ? "Uploading..." : "Save Profile"}
+          </button>
         </div>
 
-        <button
-          onClick={saveProfile}
-          disabled={saving || uploading}
-          className="bg-gray-700 dark:bg-gray-300 text-white dark:text-gray-900 py-2 px-4 rounded-lg disabled:opacity-50"
-        >
-          {saving ? "Saving..." : uploading ? "Uploading..." : "Save Profile"}
-        </button>
+        <p>
+          <strong>Email:</strong> {user.email || "No email available"}
+        </p>
       </div>
-
-      <p>
-        <strong>Email:</strong> {user.email || "No email available"}
-      </p>
     </main>
   );
 };
