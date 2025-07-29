@@ -2,30 +2,42 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
-const Background = createContext();
+// 1. Rename to BackgroundContext (clarity and convention)
+const BackgroundContext = createContext();
 
 export const BackgroundProvider = ({ children }) => {
   const [backgroundUrl, setBackgroundUrl] = useState("");
 
-  const fetchBackground = async () => {
+  const refreshBackground = async () => {
     const user = auth.currentUser;
     if (user) {
       const docRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(docRef);
       const bgId = docSnap.data()?.settings?.background;
-      if (bgId) setBackgroundUrl(`/${bgId}.jpg`);
+      if (bgId) {
+        setBackgroundUrl(`/${bgId}.jpg`);
+      } else {
+        setBackgroundUrl(""); // fallback
+      }
     }
   };
 
   useEffect(() => {
-    fetchBackground();
+    refreshBackground();
   }, []);
 
   return (
-    <Background.Provider value={{ backgroundUrl, fetchBackground }}>
+    <BackgroundContext.Provider value={{ backgroundUrl, refreshBackground: refreshBackground }}>
       {children}
-    </Background.Provider>
+    </BackgroundContext.Provider>
   );
 };
 
-export const useBackground = () => useContext(Background);
+// 2. Add safety check to avoid undefined usage
+export const useBackground = () => {
+  const context = useContext(BackgroundContext);
+  if (!context) {
+    throw new Error("useBackground must be used within a BackgroundProvider");
+  }
+  return context;
+};
