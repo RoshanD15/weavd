@@ -13,7 +13,7 @@ import Profile from "./pages/Profile";
 import Sidebar from "./components/Sidebar";
 import PostDetail from "./pages/PostDetail";
 import Closet from "./pages/Closet";
-import { useBackground } from "./context/BackgroundContext";
+import { useBackground } from "./context/Background";
 
 
 function AppShell() {

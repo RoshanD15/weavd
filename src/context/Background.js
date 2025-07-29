@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
-const BackgroundContext = createContext();
+const Background = createContext();
 
 export const BackgroundProvider = ({ children }) => {
   const [backgroundUrl, setBackgroundUrl] = useState("");
@@ -22,10 +22,10 @@ export const BackgroundProvider = ({ children }) => {
   }, []);
 
   return (
-    <BackgroundContext.Provider value={{ backgroundUrl, fetchBackground }}>
+    <Background.Provider value={{ backgroundUrl, fetchBackground }}>
       {children}
-    </BackgroundContext.Provider>
+    </Background.Provider>
   );
 };
 
-export const useBackground = () => useContext(BackgroundContext);
+export const useBackground = () => useContext(Background);
