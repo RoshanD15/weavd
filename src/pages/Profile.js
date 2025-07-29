@@ -13,7 +13,7 @@ import { updateProfile } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import DarkModeToggle from "../components/DarkModeToggle";
 import { useNavigate } from "react-router-dom";
-import { useBackground } from "../context/BackgroundContext";
+import { useBackground } from "../context/Background";
 
 const BACKGROUND_PRESETS = [
   { id: "BackgroundBeach", label: "Beach", url: "/BackgroundBeach.jpg" },
