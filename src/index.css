@@ -2,6 +2,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Masonry grid styles */
 .my-masonry-grid {
   display: flex;
   margin-left: -0.5rem; /* gutter size offset */
@@ -10,4 +12,9 @@
 .my-masonry-grid_column {
   padding-left: 0.5rem; /* gutter size */
   background-clip: padding-box;
+}
+
+/* Optional: smooth transitions for color & background changes */
+body, .my-masonry-grid, .my-masonry-grid_column {
+  transition: background 0.3s, color 0.3s, background-image 0.3s;
 }
