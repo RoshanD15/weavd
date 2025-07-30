@@ -26,7 +26,7 @@ export default function PostSearchFilter({
     <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
       <input
         type="text"
-        className="border rounded-lg px-4 py-2 w-full md:w-96"
+        className="border rounded-lg px-4 py-2 w-full md:w-96 text-black"
         placeholder="Search by name, tag, or description..."
         value={searchQuery}
         onChange={e => setSearchQuery(e.target.value)}
