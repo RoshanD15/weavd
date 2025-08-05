@@ -1,7 +1,7 @@
 import React from "react";
 import useDarkMode from "../hooks/useDarkMode";
 console.log("useDarkMode:", useDarkMode);
-console.log(useDarkMode);
+
 
 export default function DarkModeToggle() {
   const [darkMode, setDarkMode] = useDarkMode();

@@ -7,9 +7,9 @@ import FloatingAddButton from "../components/FloatingAddButton";
 import GroupImagesModal from "../components/GroupImagesModal";
 import AddItemsModal from "../components/AddItemsModal";
 import Masonry from "react-masonry-css";
-import PostSearchFilter from "../components/PostSearchFilter"; // <-- ADD THIS
-import { filterPosts } from "../utils/filterPosts"; // <-- ADD THIS
-import Skeleton from "../components/Skeleton"; // For shimmer loading
+import PostSearchFilter from "../components/PostSearchFilter"; 
+import { filterPosts } from "../utils/filterPosts"; 
+import Skeleton from "../components/Skeleton"; 
 
 const COLOR_OPTIONS = [
   "#f87171", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa", "#f472b6", "#d1d5db"
@@ -46,7 +46,7 @@ export default function MyCloset() {
   const [groups, setGroups] = useState([]);
   const [currentGroupIdx, setCurrentGroupIdx] = useState(0);
 
-  // Fetch posts: paginated, filtered by color
+  
   useEffect(() => {
     if (!user) return;
     setLoading(true);
@@ -84,8 +84,7 @@ export default function MyCloset() {
   }, [user, selectedColor]);
 
   // Client-side search
-  const filteredPosts = filterPosts(posts, searchQuery, ""); // Don't pass color, handled server-side
-
+  const filteredPosts = filterPosts(posts, searchQuery, ""); 
   // Load more posts
   const handleLoadMore = async () => {
     if (!user || !lastDoc) return;
@@ -206,9 +205,6 @@ export default function MyCloset() {
           </button>
         </div>
       )}
-
-      {/* Floating Action Button */}
-      <FloatingAddButton onClick={handleOpenGroupModal} />
 
       {/* Grouping modal */}
       <GroupImagesModal

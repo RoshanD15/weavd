@@ -82,7 +82,7 @@ export default function Sidebar({ open, setOpen }) {
                 Explore
               </Link>
               <Link
-                to="/Closet"
+                to="/MyCloset"
                 onClick={() => setOpen(false)}
                 className="text-gray-900 dark:text-gray-200 hover:text-primary dark:hover:text-primary"
               >
